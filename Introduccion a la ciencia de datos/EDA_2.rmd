@@ -1,0 +1,114 @@
+---
+title: "Análisis exploratorio de datos. Alquiler de bicicletas"
+author: "José Carlos Martínez Velázquez"
+date: "6 de Noviembre, 2017"
+output: pdf_document
+---
+
+```{r}
+train<-read.csv(file='train.csv',header=TRUE)
+test<-read.csv(file='test.csv',header=TRUE)
+
+test$casual<-0
+test$registered<-0
+test$count<-0
+
+dataset<-rbind(train,test)
+
+hasNA = function(x) any(is.na(x))
+apply(train,2,hasNA)
+apply(test,2,hasNA)
+apply(dataset,2,hasNA)
+```
+
+
+
+```{r}
+library(reshape2)
+library(ggplot2)
+
+gg<-ggplot()
+
+season.h<-geom_histogram(data=dataset,aes(season),binwidth = 0.5)
+holiday.h<-geom_histogram(data=dataset,aes(holiday),binwidth = 0.5)
+workingday.h<-geom_histogram(data=dataset,aes(workingday),binwidth = 0.5)
+weather.h<-geom_histogram(data=dataset,aes(weather),binwidth = 0.5)
+temp.h<-geom_histogram(data=dataset,aes(temp),binwidth = 0.5)
+atemp.h<-geom_histogram(data=dataset,aes(atemp),binwidth = 0.5)
+humidity.h<-geom_histogram(data=dataset,aes(humidity),binwidth = 0.5)
+windspeed.h<-geom_histogram(data=dataset,aes(windspeed),binwidth = 0.5)
+casual.h<-geom_histogram(data=dataset,aes(casual),binwidth = 0.5)
+registered.h<-geom_histogram(data=dataset,aes(registered),binwidth = 0.5)
+count.h<-geom_histogram(data=dataset,aes(count),binwidth = 0.5)
+
+gg+season.h
+gg+holiday.h
+gg+workingday.h
+gg+weather.h
+gg+temp.h
+gg+atemp.h
+gg+humidity.h
+gg+windspeed.h
+gg+casual.h
+gg+registered.h
+gg+count.h
+```
+
+
+```{r}
+work.examples<-dataset[dataset$workingday==1,]
+no.work.examples<-dataset[dataset$workingday==0,]
+```
+
+```{r}
+dataset$hour<-substr(dataset$datetime,12,13)
+dataset$hour<-as.factor(dataset$hour)
+
+registered.box <- ggplot(dataset, aes(hour, registered))
+registered.box + geom_boxplot(aes(fill=hour))
+
+
+casual.box <- ggplot(dataset, aes(hour, casual))
+casual.box + geom_boxplot(aes(fill=hour))
+```
+
+
+
+
+```{r}
+dataset$hour<-substr(dataset$datetime,12,13)
+dataset$hour<-as.factor(dataset$hour)
+
+registered.box <- ggplot(dataset, aes(hour, log(registered)))
+registered.box + geom_boxplot(aes(fill=hour))
+
+casual.box <- ggplot(dataset, aes(hour, casual))
+casual.box + geom_boxplot(aes(fill=hour))
+```
+
+
+
+```{r}
+date<-substr(dataset$datetime,1,10)
+days<-weekdays(as.Date(date))
+dataset$day<-days
+
+casual.box <- ggplot(dataset, aes(days, casual))
+casual.box + geom_boxplot(aes(fill=days))
+
+registered.box <- ggplot(dataset, aes(days, registered))
+registered.box + geom_boxplot(aes(fill=days))
+```
+
+
+
+```{r}
+sub<-train[,c("registered","casual","count","temp","humidity","atemp","windspeed")]
+
+matriz<-cor(sub)
+
+install.packages("corrplot")
+library("corrplot")
+corrplot(matriz,method="number")
+```
+
